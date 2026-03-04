@@ -12,6 +12,7 @@ export const PlaylistsPage: React.FC = () => {
   const playlists = data ?? [];
   const [newName, setNewName] = useState('');
   const [selectedPlaylistId, setSelectedPlaylistId] = useState<string | null>(null);
+  const [showAddSongs, setShowAddSongs] = useState(false);
   const { showToast } = useToast();
   const { playTracks } = usePlayer();
   
@@ -26,6 +27,15 @@ export const PlaylistsPage: React.FC = () => {
       return { playlist, tracks: filteredTracks };
     },
     [selectedPlaylistId, refetchKey],
+  );
+  
+  // Load all tracks for adding to playlist
+  const { data: allTracks } = useAsyncQuery<Track[]>(
+    async () => {
+      if (!showAddSongs) return [];
+      return await db.tracks.orderBy('createdAt').toArray();
+    },
+    [showAddSongs, refetchKey],
   );
 
   const createPlaylist = async () => {
@@ -131,6 +141,21 @@ export const PlaylistsPage: React.FC = () => {
     showToast('Removed from playlist');
   };
 
+  const addTrackToPlaylist = async (trackId: string) => {
+    if (!selectedPlaylistId || !playlistData?.playlist) return;
+    if (playlistData.playlist.trackIds.includes(trackId)) {
+      showToast('Song already in playlist');
+      return;
+    }
+    const nextIds = [...playlistData.playlist.trackIds, trackId];
+    await db.playlists.update(selectedPlaylistId, {
+      trackIds: nextIds,
+      updatedAt: new Date().toISOString(),
+    });
+    setRefetchKey(prev => prev + 1);
+    showToast('Added to playlist');
+  };
+
   const playPlaylist = async () => {
     if (!playlistData?.tracks.length) return;
     await playTracks(playlistData.tracks, 0);
@@ -155,15 +180,70 @@ export const PlaylistsPage: React.FC = () => {
                 {playlistData.playlist.trackIds.length} track{playlistData.playlist.trackIds.length === 1 ? '' : 's'}
               </p>
             </div>
-            <button
-              type="button"
-              onClick={playPlaylist}
-              disabled={!playlistData.tracks.length}
-              className="rounded-lg bg-gradient-to-r from-purple-500 to-cyan-500 px-4 py-2 text-sm font-medium text-white transition hover:scale-105 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              Play playlist
-            </button>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setShowAddSongs(true)}
+                className="rounded-lg border border-purple-500 px-4 py-2 text-sm font-medium text-purple-400 transition hover:bg-purple-500/10"
+              >
+                Add songs
+              </button>
+              <button
+                type="button"
+                onClick={playPlaylist}
+                disabled={!playlistData.tracks.length}
+                className="rounded-lg bg-gradient-to-r from-purple-500 to-cyan-500 px-4 py-2 text-sm font-medium text-white transition hover:scale-105 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Play playlist
+              </button>
+            </div>
           </div>
+          
+          {/* Add Songs Modal */}
+          {showAddSongs && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4" onClick={() => setShowAddSongs(false)}>
+              <div className="max-h-[80vh] w-full max-w-2xl overflow-hidden rounded-xl border border-white/10 bg-[#090909]" onClick={(e) => e.stopPropagation()}>
+                <div className="flex items-center justify-between border-b border-white/10 p-4">
+                  <h3 className="text-lg font-semibold">Add Songs to Playlist</h3>
+                  <button
+                    type="button"
+                    onClick={() => setShowAddSongs(false)}
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    ✕
+                  </button>
+                </div>
+                <div className="max-h-[60vh] overflow-y-auto p-4">
+                  {allTracks && allTracks.length > 0 ? (
+                    <div className="space-y-1">
+                      {allTracks.map((track) => {
+                        const isInPlaylist = playlistData.playlist.trackIds.includes(track.id);
+                        return (
+                          <button
+                            key={track.id}
+                            onClick={() => !isInPlaylist && addTrackToPlaylist(track.id)}
+                            disabled={isInPlaylist}
+                            className={`w-full rounded-lg px-4 py-3 text-left transition ${
+                              isInPlaylist
+                                ? 'cursor-not-allowed opacity-40'
+                                : 'hover:bg-white/5'
+                            }`}
+                          >
+                            <p className="truncate text-sm font-medium">{track.title}</p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {track.artist} • {track.album}
+                            </p>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <p className="text-center text-sm text-muted-foreground">No songs available</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
           
           <div className="divide-y divide-white/5 rounded-lg border border-white/10">
             {playlistData.tracks.length === 0 && (

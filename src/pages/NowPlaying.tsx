@@ -21,17 +21,17 @@ export const NowPlayingPage: React.FC<{ compact?: boolean }> = ({ compact = fals
     setShuffle,
   } = usePlayer();
 
-  const [queueOpen, setQueueOpen] = useState(!compact);
+  const [queueOpen] = useState(true); // Always show queue in compact mode
 
   const progress = duration ? (currentTime / duration) * 100 : 0;
 
   if (compact) {
     // Compact mode for right sidebar
     return (
-      <div className="space-y-4">
+      <div className="flex h-full flex-col gap-4">
         {currentTrack ? (
           <>
-            <div className="flex flex-col items-center gap-4">
+            <div className="flex flex-col items-center gap-3">
               <Artwork track={currentTrack} size="lg" />
               <div className="w-full space-y-1 text-center">
                 <h2 className="text-sm font-semibold">{currentTrack.title}</h2>
@@ -105,6 +105,14 @@ export const NowPlayingPage: React.FC<{ compact?: boolean }> = ({ compact = fals
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
               </button>
+            </div>
+            
+            {/* Queue Section - inline with border */}
+            <div className="flex min-h-0 flex-1 flex-col rounded-lg border border-white/10 bg-[#0a0a0a] p-3">
+              <h3 className="mb-2 text-xs font-semibold">Queue</h3>
+              <div className="min-h-0 flex-1">
+                <QueueDrawer open={queueOpen} onClose={() => {}} compact />
+              </div>
             </div>
           </>
         ) : (
@@ -233,21 +241,10 @@ export const NowPlayingPage: React.FC<{ compact?: boolean }> = ({ compact = fals
           )}
         </div>
       </section>
-      <section className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold">Queue</h2>
-          <button
-            type="button"
-            onClick={() => setQueueOpen(!queueOpen)}
-            aria-expanded={queueOpen}
-            aria-controls="queue-panel"
-            className="text-xs text-muted-foreground hover:underline"
-          >
-            {queueOpen ? 'Hide queue' : 'Show queue'}
-          </button>
-        </div>
-        <div id="queue-panel" className="relative min-h-[200px] rounded-2xl border border-white/10 bg-[#0a0a0a]">
-          <QueueDrawer open={queueOpen} onClose={() => setQueueOpen(false)} />
+      <section className="flex min-h-0 flex-1 flex-col space-y-3">
+        <h2 className="text-sm font-semibold">Queue</h2>
+        <div className="flex min-h-0 flex-1 flex-col rounded-2xl border border-white/10 bg-[#0a0a0a] p-4">
+          <QueueDrawer open={true} onClose={() => {}} compact />
         </div>
       </section>
     </div>

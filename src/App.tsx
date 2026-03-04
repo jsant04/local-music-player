@@ -13,7 +13,6 @@ import { ToastProvider } from './components/ToastProvider';
 
 const App: React.FC = () => {
   const [queueOpen, setQueueOpen] = useState(false);
-  const [nowPlayingOpen, setNowPlayingOpen] = useState(true);
 
   return (
     <BrowserRouter>
@@ -45,39 +44,11 @@ const App: React.FC = () => {
                   <Route path="*" element={<Navigate to="/songs" replace />} />
                 </Routes>
               </main>
-
-              {/* Right panel - Now Playing (desktop only, collapsible) */}
-              <aside
-                className={`hidden lg:flex lg:flex-col lg:border-l lg:border-white/5 lg:bg-[#0a0a0a] transition-all duration-300 ${
-                  nowPlayingOpen ? 'lg:w-80' : 'lg:w-0 lg:overflow-hidden'
-                }`}
-              >
-                {nowPlayingOpen && (
-                  <div className="flex h-full flex-col p-4">
-                    <div className="mb-3 flex items-center justify-between">
-                      <h2 className="text-sm font-semibold">Now Playing</h2>
-                      <button
-                        type="button"
-                        onClick={() => setNowPlayingOpen(false)}
-                        className="text-xs text-muted-foreground hover:text-foreground"
-                        aria-label="Close now playing panel"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                    <div className="flex-1 overflow-y-auto">
-                      <NowPlayingPage compact />
-                    </div>
-                  </div>
-                )}
-              </aside>
             </div>
 
             {/* Bottom sticky player bar */}
             <PlayerBar 
-              onToggleQueue={() => setQueueOpen((v) => !v)} 
-              onToggleNowPlaying={() => setNowPlayingOpen((v) => !v)}
-              nowPlayingOpen={nowPlayingOpen}
+              onToggleQueue={() => setQueueOpen((v) => !v)}
             />
             
             {/* Queue drawer (mobile/tablet) */}

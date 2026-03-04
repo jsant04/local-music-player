@@ -41,7 +41,7 @@ export const SongList: React.FC<SongListProps> = ({
   if (tableView) {
     // Table layout for streaming feel
     return (
-      <div className="mt-4 overflow-x-auto">
+      <div className="mt-4">
         <table className="w-full text-sm">
           <thead className="border-b border-white/5 text-left text-xs text-muted-foreground">
             <tr>

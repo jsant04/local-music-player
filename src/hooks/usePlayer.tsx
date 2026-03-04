@@ -48,6 +48,8 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [shuffle, setShuffleState] = useState(false);
 
   const [settingsLoaded, setSettingsLoaded] = useState(false);
+  const autoPlayAttemptedRef = useRef(false);
+  const shouldAutoPlayRef = useRef(false);
 
   useEffect(() => {
     const audio = new Audio();
@@ -92,6 +94,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setShuffleState(settings.shuffle);
       
       let trackToPlay: Track | null = null;
+      let shouldAutoPlay = false;
       
       // If we have a saved queue, restore it
       if (settings.lastQueue && settings.lastQueue.length > 0) {
@@ -100,6 +103,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           const track = await db.tracks.get(settings.lastTrackId);
           if (track) {
             trackToPlay = track;
+            shouldAutoPlay = true;
           }
         }
       } else {
@@ -108,42 +112,38 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         if (allTracks.length > 0) {
           setQueueState({ queue: allTracks.map(t => t.id), currentIndex: 0 });
           trackToPlay = allTracks[0];
+          shouldAutoPlay = true;
         }
       }
       
       // Load the track and attempt autoplay
-      if (trackToPlay) {
+      if (trackToPlay && shouldAutoPlay) {
         setCurrentTrack(trackToPlay);
+        shouldAutoPlayRef.current = true;
         const audio = audioRef.current;
         if (audio) {
           const src = await getAudioUrlForTrack(trackToPlay);
           audio.src = src;
           audio.currentTime = 0;
           
-          // Immediately attempt to play
-          audio.play().then(() => {
-            setIsPlaying(true);
-            console.log('Autoplay successful');
-          }).catch((err) => {
-            console.log('Autoplay blocked. Trying alternative approach...', err);
-            // If blocked, set up a one-time click listener on the document
-            const handleFirstInteraction = () => {
-              audio.play().then(() => {
-                setIsPlaying(true);
-                console.log('Playback started after user interaction');
-              }).catch((e) => {
-                console.error('Playback failed:', e);
-              });
-              // Remove listeners after first interaction
-              document.removeEventListener('click', handleFirstInteraction);
-              document.removeEventListener('touchstart', handleFirstInteraction);
-              document.removeEventListener('keydown', handleFirstInteraction);
-            };
-            
-            document.addEventListener('click', handleFirstInteraction, { once: true });
-            document.addEventListener('touchstart', handleFirstInteraction, { once: true });
-            document.addEventListener('keydown', handleFirstInteraction, { once: true });
-          });
+          // Try to autoplay
+          const attemptPlay = async () => {
+            try {
+              await audio.play();
+              setIsPlaying(true);
+              autoPlayAttemptedRef.current = true;
+              console.log('✓ Autoplay successful');
+            } catch (err) {
+              console.log('⚠ Autoplay blocked. Will play on first user click anywhere on page.');
+            }
+          };
+          
+          // Wait for audio to be ready
+          if (audio.readyState >= 3) {
+            await attemptPlay();
+          } else {
+            audio.addEventListener('canplaythrough', attemptPlay, { once: true });
+          }
         }
       }
       
@@ -276,7 +276,10 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     if (!audio) return;
     audio
       .play()
-      .then(() => setIsPlaying(true))
+      .then(() => {
+        setIsPlaying(true);
+        autoPlayAttemptedRef.current = true;
+      })
       .catch(() => {
         setIsPlaying(false);
       });
@@ -296,6 +299,24 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       play();
     }
   }, [isPlaying, pause, play]);
+
+  // Set up a one-time click listener to start playback if autoplay was blocked
+  useEffect(() => {
+    const handleFirstClick = () => {
+      if (shouldAutoPlayRef.current && !autoPlayAttemptedRef.current && audioRef.current) {
+        console.log('✓ Playing audio after user click');
+        play();
+      }
+    };
+
+    document.addEventListener('click', handleFirstClick, { once: true });
+    document.addEventListener('touchstart', handleFirstClick, { once: true });
+
+    return () => {
+      document.removeEventListener('click', handleFirstClick);
+      document.removeEventListener('touchstart', handleFirstClick);
+    };
+  }, [play]);
 
   const playTracks = useCallback(
     async (tracks: Track[], startIndex = 0) => {
