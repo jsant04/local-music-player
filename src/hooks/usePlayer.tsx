@@ -48,7 +48,6 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [shuffle, setShuffleState] = useState(false);
 
   const [settingsLoaded, setSettingsLoaded] = useState(false);
-  const [hasAutoPlayed, setHasAutoPlayed] = useState(false);
 
   useEffect(() => {
     const audio = new Audio();
@@ -92,46 +91,65 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setRepeatModeState(settings.repeatMode);
       setShuffleState(settings.shuffle);
       
+      let trackToPlay: Track | null = null;
+      
       // If we have a saved queue, restore it
       if (settings.lastQueue && settings.lastQueue.length > 0) {
         setQueueState({ queue: settings.lastQueue, currentIndex: 0 });
         if (settings.lastTrackId) {
           const track = await db.tracks.get(settings.lastTrackId);
           if (track) {
-            setCurrentTrack(track);
-            const audio = audioRef.current;
-            if (audio) {
-              const src = await getAudioUrlForTrack(track);
-              audio.src = src;
-              audio.currentTime = settings.lastPosition ?? 0;
-            }
+            trackToPlay = track;
           }
         }
-      } else if (!hasAutoPlayed) {
-        // First time user - auto-play the first track
+      } else {
+        // No saved queue - load all tracks and play first one
         const allTracks = await db.tracks.orderBy('createdAt').toArray();
         if (allTracks.length > 0) {
-          const firstTrack = allTracks[0];
           setQueueState({ queue: allTracks.map(t => t.id), currentIndex: 0 });
-          setCurrentTrack(firstTrack);
-          const audio = audioRef.current;
-          if (audio) {
-            const src = await getAudioUrlForTrack(firstTrack);
-            audio.src = src;
-            try {
-              await audio.play();
-              setIsPlaying(true);
-              setHasAutoPlayed(true);
-            } catch (err) {
-              // Browser may block autoplay - user will need to click play
-              console.log('Autoplay blocked by browser:', err);
-            }
-          }
+          trackToPlay = allTracks[0];
         }
       }
+      
+      // Load the track and attempt autoplay
+      if (trackToPlay) {
+        setCurrentTrack(trackToPlay);
+        const audio = audioRef.current;
+        if (audio) {
+          const src = await getAudioUrlForTrack(trackToPlay);
+          audio.src = src;
+          audio.currentTime = 0;
+          
+          // Immediately attempt to play
+          audio.play().then(() => {
+            setIsPlaying(true);
+            console.log('Autoplay successful');
+          }).catch((err) => {
+            console.log('Autoplay blocked. Trying alternative approach...', err);
+            // If blocked, set up a one-time click listener on the document
+            const handleFirstInteraction = () => {
+              audio.play().then(() => {
+                setIsPlaying(true);
+                console.log('Playback started after user interaction');
+              }).catch((e) => {
+                console.error('Playback failed:', e);
+              });
+              // Remove listeners after first interaction
+              document.removeEventListener('click', handleFirstInteraction);
+              document.removeEventListener('touchstart', handleFirstInteraction);
+              document.removeEventListener('keydown', handleFirstInteraction);
+            };
+            
+            document.addEventListener('click', handleFirstInteraction, { once: true });
+            document.addEventListener('touchstart', handleFirstInteraction, { once: true });
+            document.addEventListener('keydown', handleFirstInteraction, { once: true });
+          });
+        }
+      }
+      
       setSettingsLoaded(true);
     })();
-  }, [hasAutoPlayed]);
+  }, []);
 
   useEffect(() => {
     if (!settingsLoaded) return;

@@ -13,6 +13,7 @@ export const PlaylistDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const { showToast } = useToast();
   const { playTracks } = usePlayer();
+  const [refetchKey, setRefetchKey] = useState(0);
 
   const { data } = useAsyncQuery(
     async () => {
@@ -22,7 +23,7 @@ export const PlaylistDetailPage: React.FC = () => {
       const filteredTracks = tracks.filter((t): t is Track => Boolean(t));
       return { playlist, tracks: filteredTracks };
     },
-    [playlistId],
+    [playlistId, refetchKey],
   );
 
   const [query, setQuery] = useState('');
@@ -56,6 +57,7 @@ export const PlaylistDetailPage: React.FC = () => {
       trackIds: nextIds,
       updatedAt: new Date().toISOString(),
     });
+    setRefetchKey(prev => prev + 1);
     showToast('Removed from playlist');
   };
 

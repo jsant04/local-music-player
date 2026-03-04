@@ -18,7 +18,7 @@ export const SongsPage: React.FC = () => {
   const tracks = data ?? [];
 
   const [query, setQuery] = useState('');
-  const [sortBy, setSortBy] = useState<'title' | 'artist' | 'recent'>('title');
+  const [sortBy, setSortBy] = useState<'title' | 'artist' | 'recent' | 'createdAt'>('createdAt');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('table');
   const { playTracks, enqueueTracks } = usePlayer();
@@ -52,8 +52,10 @@ export const SongsPage: React.FC = () => {
       result = [...result].sort((a, b) => a.title.localeCompare(b.title));
     } else if (sortBy === 'artist') {
       result = [...result].sort((a, b) => a.artist.localeCompare(b.artist));
-    } else {
+    } else if (sortBy === 'recent') {
       result = [...result].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    } else if (sortBy === 'createdAt') {
+      result = [...result].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
     }
     return result;
   }, [tracks, query, sortBy]);
@@ -139,6 +141,7 @@ export const SongsPage: React.FC = () => {
               className="h-9 rounded-lg border border-white/10 bg-[#0a0a0a] px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               aria-label="Sort songs"
             >
+              <option value="createdAt">Date Added</option>
               <option value="title">Title</option>
               <option value="artist">Artist</option>
               <option value="recent">Recently added</option>
