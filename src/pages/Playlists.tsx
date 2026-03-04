@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { useAsyncQuery } from '../hooks/useIndexedDb';
 import { db } from '../db/indexedDb';
 import type { Playlist, Track } from '../types';
