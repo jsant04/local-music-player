@@ -52,8 +52,6 @@ export async function updateSettings(partial: Partial<AppSettings>): Promise<App
 }
 
 export async function seedDemoData(): Promise<void> {
-  if (!import.meta.env.DEV) return;
-
   const existing = await db.tracks.count();
   if (existing > 0) return;
 
