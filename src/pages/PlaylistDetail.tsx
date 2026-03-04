@@ -63,6 +63,7 @@ export const PlaylistDetailPage: React.FC = () => {
 
   const playPlaylist = async () => {
     if (!tracks.length) return;
+    // Always play from the first song in the playlist, not the filtered results
     await playTracks(tracks, 0);
   };
 
