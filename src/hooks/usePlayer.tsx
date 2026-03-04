@@ -48,6 +48,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [shuffle, setShuffleState] = useState(false);
 
   const [settingsLoaded, setSettingsLoaded] = useState(false);
+  const [hasAutoPlayed, setHasAutoPlayed] = useState(false);
 
   useEffect(() => {
     const audio = new Audio();
@@ -90,6 +91,8 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       const settings = await getOrCreateSettings();
       setRepeatModeState(settings.repeatMode);
       setShuffleState(settings.shuffle);
+      
+      // If we have a saved queue, restore it
       if (settings.lastQueue && settings.lastQueue.length > 0) {
         setQueueState({ queue: settings.lastQueue, currentIndex: 0 });
         if (settings.lastTrackId) {
@@ -104,10 +107,31 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             }
           }
         }
+      } else if (!hasAutoPlayed) {
+        // First time user - auto-play the first track
+        const allTracks = await db.tracks.orderBy('createdAt').toArray();
+        if (allTracks.length > 0) {
+          const firstTrack = allTracks[0];
+          setQueueState({ queue: allTracks.map(t => t.id), currentIndex: 0 });
+          setCurrentTrack(firstTrack);
+          const audio = audioRef.current;
+          if (audio) {
+            const src = await getAudioUrlForTrack(firstTrack);
+            audio.src = src;
+            try {
+              await audio.play();
+              setIsPlaying(true);
+              setHasAutoPlayed(true);
+            } catch (err) {
+              // Browser may block autoplay - user will need to click play
+              console.log('Autoplay blocked by browser:', err);
+            }
+          }
+        }
       }
       setSettingsLoaded(true);
     })();
-  }, []);
+  }, [hasAutoPlayed]);
 
   useEffect(() => {
     if (!settingsLoaded) return;

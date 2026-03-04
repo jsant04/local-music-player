@@ -12,7 +12,8 @@ export const SongsPage: React.FC = () => {
   const [refetchKey, setRefetchKey] = useState(0);
   const { data, loading } = useAsyncQuery<Track[]>(async () => {
     const all = await db.tracks.toArray();
-    return all.sort((a, b) => a.title.localeCompare(b.title));
+    // Sort by creation date (oldest first) so default song stays first
+    return all.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
   }, [refetchKey]);
   const tracks = data ?? [];
 
