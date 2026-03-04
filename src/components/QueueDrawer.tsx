@@ -64,10 +64,10 @@ export const QueueDrawer: React.FC<{ open: boolean; onClose: () => void; compact
   // Full page mode for mobile
   return (
     <aside
-      className="fixed inset-x-0 bottom-16 z-30 max-h-[70vh] rounded-t-3xl border border-white/10 bg-[#0a0a0a]/95 p-4 shadow-soft backdrop-blur-xl lg:inset-0 lg:relative lg:max-h-none lg:rounded-2xl"
+      className="fixed inset-x-0 bottom-16 z-30 flex max-h-[75vh] flex-col rounded-t-3xl border border-white/10 bg-[#0a0a0a]/95 p-4 shadow-soft backdrop-blur-xl lg:inset-0 lg:relative lg:max-h-none lg:rounded-2xl"
       aria-label="Playback queue"
     >
-      <div className="mb-3 flex items-center justify-between">
+      <div className="mb-3 flex flex-shrink-0 items-center justify-between">
         <h2 className="text-sm font-semibold">Queue</h2>
         <div className="flex items-center gap-2 text-xs">
           <button
@@ -89,7 +89,7 @@ export const QueueDrawer: React.FC<{ open: boolean; onClose: () => void; compact
       {items.length === 0 ? (
         <p className="text-xs text-muted-foreground">No tracks in the queue.</p>
       ) : (
-        <ol className="flex max-h-[calc(70vh-5rem)] flex-col gap-1 overflow-y-auto text-xs lg:max-h-[calc(100vh-16rem)]">
+        <ol className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto pb-4 text-xs">
           {items.map((track, index) => (
             <li
               key={track.id}

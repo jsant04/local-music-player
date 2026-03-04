@@ -9,3 +9,13 @@ body,
 body {
   margin: 0;
 }
+
+/* Hide scrollbar for horizontal navigation on mobile */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

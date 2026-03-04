@@ -22,33 +22,33 @@ export const TopBar: React.FC = () => {
       </Link>
       
       {/* Navigation - vertical on desktop, horizontal on mobile */}
-      <nav className="flex flex-row gap-2 overflow-x-auto lg:flex-col lg:gap-1">
+      <nav className="no-scrollbar flex flex-row gap-2 overflow-x-auto lg:flex-col lg:gap-1">
         <NavLink to="/songs" className={navLinkClass}>
-          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="h-5 w-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
           </svg>
-          <span className="whitespace-nowrap">Home</span>
+          <span className="whitespace-nowrap max-[390px]:hidden">Home</span>
         </NavLink>
         
         <NavLink to="/playlists" className={navLinkClass}>
-          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="h-5 w-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
           </svg>
-          <span className="whitespace-nowrap">Playlists</span>
+          <span className="whitespace-nowrap max-[390px]:hidden">Playlists</span>
         </NavLink>
         
         <NavLink to="/upload" className={navLinkClass}>
-          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="h-5 w-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
           </svg>
-          <span className="whitespace-nowrap">Upload</span>
+          <span className="whitespace-nowrap max-[390px]:hidden">Upload</span>
         </NavLink>
         
         <NavLink to="/now-playing" className={navLinkClass}>
-          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="h-5 w-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
           </svg>
-          <span className="whitespace-nowrap">Now Playing</span>
+          <span className="whitespace-nowrap max-[390px]:hidden">Now Playing</span>
         </NavLink>
       </nav>
     </header>
