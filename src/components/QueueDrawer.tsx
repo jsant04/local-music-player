@@ -26,7 +26,7 @@ export const QueueDrawer: React.FC<{ open: boolean; onClose: () => void; compact
   // Compact mode for right sidebar - inline display
   if (compact) {
     return (
-      <div className="flex h-full flex-col" aria-label="Playback queue">
+      <div className="flex h-full flex-col pb-16 lg:pb-0" aria-label="Playback queue">
         <div className="mb-2 flex items-center justify-between">
           <h3 className="text-xs font-semibold">Up Next</h3>
           <button
@@ -40,7 +40,7 @@ export const QueueDrawer: React.FC<{ open: boolean; onClose: () => void; compact
         {items.length === 0 ? (
           <p className="text-[11px] text-muted-foreground">No tracks in queue</p>
         ) : (
-          <ol className="flex flex-1 flex-col gap-0.5 overflow-y-auto pr-1 text-[11px]">
+          <ol className="flex max-h-[50vh] flex-1 flex-col gap-0.5 overflow-y-auto pr-1 text-[11px] lg:max-h-[60vh]">
             {items.map((track, index) => (
               <li
                 key={track.id}
