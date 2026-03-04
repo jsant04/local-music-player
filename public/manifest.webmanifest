@@ -1,0 +1,21 @@
+{
+  "name": "Audify – Music Streaming",
+  "short_name": "Audify",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#090909",
+  "theme_color": "#0a0a0a",
+  "description": "Dark music streaming player for your browser.",
+  "icons": [
+    {
+      "src": "/icons/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/icons/icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}
